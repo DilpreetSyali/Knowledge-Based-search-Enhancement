@@ -69,7 +69,7 @@ def get_combined_suggestions(query, history_suggestions, dynamic_suggestions):
 @app.route('/')
 def home():
     """Render the homepage."""
-    return render_template('front.html')
+    return render_template('index.html')
 
 @app.route('/autocomplete')
 def autocomplete():
