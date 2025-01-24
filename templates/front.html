@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web-Ninja</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #313134;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            flex-direction: column;
+            overflow-y: auto; 
+        }
+
+        .container {
+            text-align: center;
+            width: 90%;
+            max-width: 600px;
+            padding: 20px;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            color: #5854bc;
+        }
+
+        .logo {
+            max-width: 150px;
+            margin-bottom: 20px;
+            border-radius: 25px;
+        }
+
+        .search-bar {
+            position: relative;
+            margin-bottom: 30px;
+            width: 100%; 
+        }
+
+        #searchInput {
+            width: 100%;
+            padding: 12px 50px 12px 20px;
+            font-size: 1rem;
+            border: 2px solid #5854bc;
+            border-radius: 25px;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        #searchInput:focus {
+            border-color: #e76f51;
+            box-shadow: 0 0 5px rgba(231, 111, 81, 0.5);
+        }
+
+        #searchInput::placeholder {
+            color: #888;
+        }
+
+        .search-button {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            background-color: transparent;
+            border: none;
+            cursor: pointer;
+        }
+
+        .search-button img {
+            width: 20px;
+            height: 20px;
+        }
+
+        .suggestions {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            width: 100%;
+            max-width: 600px;
+            border: 1px solid #ccc;
+            border-radius: 0 0 10px 10px;
+            max-height: 200px;
+            overflow-y: auto;
+            background-color: white;
+            z-index: 1000;
+            display: none;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .suggestion {
+            padding: 12px;
+            cursor: pointer;
+            text-align: left;
+            border-radius: 20px;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+
+        .saved-suggestion {
+            font-weight: bold;
+            background-color: #f1f1f1;
+            color: #5854bc;
+        }
+
+        .new-suggestion {
+            background-color: #e9f7fe;
+            color: #333;
+        }
+
+        .suggestion:hover {
+            background-color: #f0f0f0;
+            transform: scale(1.05);
+        }
+
+        .actions {
+            margin-top: 10px;
+        }
+
+        .button {
+            padding: 10px 20px;
+            margin: 5px;
+            border: none;
+            border-radius: 25px;
+            background-color: #5854bc;
+            color: white;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .button:hover {
+            background-color: #e76f51;
+        }
+
+        #results {
+            margin-top: 40px;
+            text-align: left;
+            max-height: 400px;
+            overflow-y: auto;
+            max-width: 1000px; 
+            width: 100%; 
+            margin-left: auto;
+            margin-right: auto; 
+        }
+
+
+        .result {
+            background-color: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .result a {
+            color: #5854bc;
+            font-weight: bold;
+            text-decoration: none;
+        }
+
+        .result a:hover {
+            text-decoration: underline;
+        }
+
+        .result p {
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <img src="static/images/logo.png" alt="Logo" class="logo">
+        <h1>Happy Surfing!!</h1>
+        <div class="search-bar">
+            <input type="text" id="searchInput" placeholder="Search for something..." oninput="showPreviousSearches()" onfocus="showPreviousSearches()">
+            <button class="search-button" onclick="search()">
+                <img src="static/images/search.png" alt="Search">
+            </button>
+            <div id="searchSuggestions" class="suggestions"></div>
+        </div>
+        <div class="actions">
+            <button class="button" onclick="search()">Search</button>
+            <button class="button" onclick="clearCache()">Clear Cache</button>
+        </div>
+        <div id="results"></div>
+    </div>
+    <script>
+        const searchInput = document.getElementById('searchInput');
+        const searchSuggestions = document.getElementById('searchSuggestions');
+        const resultsDiv = document.getElementById('results');
+
+        function showPreviousSearches() {
+            let query = searchInput.value;
+            if (!query) return;
+
+            fetch(`/autocomplete?q=${query}`)
+                .then(response => response.json())
+                .then(data => {
+                    searchSuggestions.innerHTML = '';
+                    if (data.suggestions.length > 0) {
+                        searchSuggestions.style.display = 'block';
+                        data.suggestions.forEach(suggestion => {
+                            let suggestionDiv = document.createElement('div');
+                            suggestionDiv.classList.add('suggestion');
+                            if (data.suggestions.indexOf(suggestion) < 3) {
+                                suggestionDiv.classList.add('saved-suggestion');
+                            } else {
+                                suggestionDiv.classList.add('new-suggestion');
+                            }
+                            suggestionDiv.innerText = suggestion;
+                            suggestionDiv.onclick = () => {
+                                searchInput.value = suggestion;
+                                search();
+                            };
+                            searchSuggestions.appendChild(suggestionDiv);
+                        });
+                    } else {
+                        searchSuggestions.style.display = 'none';
+                    }
+                });
+        }
+
+        function search() {
+            let query = searchInput.value;
+            if (!query) return;
+
+            fetch(`/search?q=${query}`)
+                .then(response => response.json())
+                .then(data => {
+                    resultsDiv.innerHTML = '';
+                    if (data.results.length > 0) {
+                        data.results.forEach(result => {
+                            let resultDiv = document.createElement('div');
+                            resultDiv.classList.add('result');
+                            resultDiv.innerHTML = `<a href="${result.url}" target="_blank">${result.title}</a><p>${result.snippet}</p>`;
+                            resultsDiv.appendChild(resultDiv);
+                        });
+                    } else {
+                        resultsDiv.innerHTML = 'No results found.';
+                    }
+                });
+        }
+
+        function clearCache() {
+            localStorage.removeItem('searchHistory');
+            searchSuggestions.innerHTML = '';
+            searchSuggestions.style.display = 'none';
+            alert('Search history cleared!');
+        }
+
+        document.addEventListener('click', function (event) {
+            if (!searchSuggestions.contains(event.target) && event.target !== searchInput) {
+                searchSuggestions.style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>
