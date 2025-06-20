@@ -4,7 +4,10 @@ A smart search assistant that enhances user queries using local history and real
 
 ## 🎥 Demo
 
-Watch the video demo here: [📽️ Click to Watch]("D:\Dell\Videos\Screen Recordings\Screen Recording 2025-01-24 150709.mp4")  
+
+https://github.com/user-attachments/assets/6219bd7f-e71d-4995-a0a0-d8199d4f0f3f
+
+
 
 ## 🚀 Features
 
